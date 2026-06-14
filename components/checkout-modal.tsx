@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { saveBuyurtma, generateOrderId, type Order, type OrderProduct } from '@/lib/orders'
 import { narxFormat } from '@/lib/products'
 
@@ -11,40 +11,46 @@ interface CheckoutModalProps {
   totalPrice: number
 }
 
+const initialCustomer = {
+  ism: '',
+  telefon: '',
+  davlat: 'O\'zbekiston',
+  shahri: '',
+  manzil: '',
+  shubaqa: '',
+}
+
 export function CheckoutModal({ isOpen, onClose, products, totalPrice }: CheckoutModalProps) {
   const [step, setStep] = useState<'info' | 'payment' | 'confirm'>('info')
   const [loading, setLoading] = useState(false)
-  
-  const [customer, setCustomer] = useState({
-    ism: '',
-    telefon: '',
-    davlat: 'O\'zbekiston',
-    shahri: '',
-    manzil: '',
-    shubaqa: '',
-  })
-
+  const [customer, setCustomer] = useState(initialCustomer)
   const [paymentMethod, setPaymentMethod] = useState<'uzcard' | 'humo' | 'visa'>('uzcard')
 
   if (!isOpen) return null
 
-  function handleInputChange(field: keyof typeof customer, value: string) {
+  const handleInputChange = useCallback((field: keyof typeof customer, value: string) => {
     setCustomer((prev) => ({ ...prev, [field]: value }))
-  }
+  }, [])
 
-  function handleNextStep() {
+  const handleReset = useCallback(() => {
+    setStep('info')
+    setCustomer(initialCustomer)
+    setPaymentMethod('uzcard')
+  }, [])
+
+  const handleNextStep = useCallback(() => {
     if (!customer.ism || !customer.telefon || !customer.shahri || !customer.manzil) {
       alert('Iltimos, barcha maydonlarni to\'ldiring!')
       return
     }
     setStep('payment')
-  }
+  }, [customer])
 
-  function handlePaymentNext() {
+  const handlePaymentNext = useCallback(() => {
     setStep('confirm')
-  }
+  }, [])
 
-  function handleConfirm() {
+  const handleConfirm = useCallback(() => {
     setLoading(true)
     setTimeout(() => {
       const order: Order = {
@@ -58,17 +64,19 @@ export function CheckoutModal({ isOpen, onClose, products, totalPrice }: Checkou
       }
       saveBuyurtma(order)
       alert('Buyurtma muvaffaqiyatli qabul qilindi! ID: ' + order.id)
-      setStep('info')
-      setCustomer({ ism: '', telefon: '', davlat: 'O\'zbekiston', shahri: '', manzil: '', shubaqa: '' })
+      handleReset()
       onClose()
       setLoading(false)
     }, 500)
-  }
+  }, [products, totalPrice, customer, paymentMethod, onClose, handleReset])
 
   return (
     <div style={{
       position: 'fixed',
-      inset: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
       zIndex: 50,
       display: 'flex',
       alignItems: 'center',
@@ -101,7 +109,10 @@ export function CheckoutModal({ isOpen, onClose, products, totalPrice }: Checkou
             {step === 'confirm' && 'Tasdiqlash'}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => {
+              handleReset()
+              onClose()
+            }}
             style={{
               backgroundColor: 'transparent',
               border: 'none',
