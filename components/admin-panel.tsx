@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink, Save } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Save, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { products as boshlangichProducts, narxFormat, sotuvNarx, type Product } from '@/lib/products'
 
@@ -43,10 +43,18 @@ export function AdminPanel() {
             AliExpress tannarxini kiriting, ustama (foiz yoki summa) qo'shing — sotuv narxi avtomatik hisoblanadi.
           </p>
         </div>
-        <Button onClick={saqlash} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-          <Save className="size-4" />
-          {saqlandi ? 'Saqlandi!' : 'Saqlash'}
-        </Button>
+        <div className="flex gap-3">
+          <Link href="/admin-orders">
+            <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+              <ShoppingBag className="size-4" />
+              Buyurtmalar
+            </Button>
+          </Link>
+          <Button onClick={saqlash} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+            <Save className="size-4" />
+            {saqlandi ? 'Saqlandi!' : 'Saqlash'}
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
